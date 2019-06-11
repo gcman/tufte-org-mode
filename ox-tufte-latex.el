@@ -35,18 +35,18 @@
 (org-export-define-derived-backend 'tufte-latex 'latex
   :menu-entry
   '(?T "Export to Tufte LaTeX"
-    ((?T "As LaTeX buffer"
-      (lambda (a s v b) (org-tufte-latex-export-as-latex a s v)))
-     (?t "As LaTeX file" (lambda (a s v b) (org-tufte-latex-export-to-latex a s v)))
-     (?l "As LaTeX file and open"
-      (lambda (a s v b)
-        (if a (org-tufte-latex-export-to-latex t s v)
-            (org-open-file (org-tufte-latex-export-to-latex nil s v)))))
-     (?P "As PDF file" org-tufte-latex-export-to-pdf)
-     (?p "As PDF file and open"
-      (lambda (a s v b)
-        (if a (org-tufte-latex-export-to-pdf t s v b)
-            (org-open-file (org-tufte-latex-export-to-pdf nil s v b)))))))
+       ((?T "As LaTeX buffer"
+            (lambda (a s v b) (org-tufte-latex-export-as-latex a s v)))
+        (?t "As LaTeX file" (lambda (a s v b) (org-tufte-latex-export-to-latex a s v)))
+        (?l "As LaTeX file and open"
+            (lambda (a s v b)
+              (if a (org-tufte-latex-export-to-latex t s v)
+                (org-open-file (org-tufte-latex-export-to-latex nil s v)))))
+        (?P "As PDF file" org-tufte-latex-export-to-pdf)
+        (?p "As PDF file and open"
+            (lambda (a s v b)
+              (if a (org-tufte-latex-export-to-pdf t s v b)
+                (org-open-file (org-tufte-latex-export-to-pdf nil s v b)))))))
   :translate-alist '((footnote-reference . org-tufte-latex-footnote-reference)
                      (table . org-tufte-latex-table)
                      (link . org-tufte-latex-link)))
@@ -64,7 +64,7 @@ used as a communication channel."
   (let* ((parent (org-export-get-parent-element link))
          (path (let ((raw-path (org-element-property :path link)))
                  (if (not (file-name-absolute-p raw-path)) raw-path
-                     (expand-file-name raw-path))))
+                   (expand-file-name raw-path))))
          (filetype (file-name-extension path))
          (caption (org-latex--caption/label-string parent info))
          (caption-above-p (org-latex--caption-above-p link info))
@@ -82,16 +82,16 @@ used as a communication channel."
                              (org-string-nw-p (plist-get attr :caption)))
                          (if (and (plist-member attr :float) (not float))
                              'nonfloat
-                             'figure))
+                           'figure))
                         ((and (not float) (plist-member attr :float)) nil))))
          (placement
           (let ((place (plist-get attr :placement)))
             (cond
-              (place (format "%s" place))
-              ((eq float 'wrap) "{l}{0.5\\textwidth}")
-              ((eq float 'figure)
-               (format "[%s]" (plist-get info :latex-default-figure-position)))
-              (t ""))))
+             (place (format "%s" place))
+             ((eq float 'wrap) "{l}{0.5\\textwidth}")
+             ((eq float 'figure)
+              (format "[%s]" (plist-get info :latex-default-figure-position)))
+             (t ""))))
          (comment-include (if (plist-get attr :comment-include) "%" ""))
          ;; It is possible to specify width and height in the
          ;; ATTR_LATEX line, and also via default variables.
@@ -106,35 +106,35 @@ used as a communication channel."
          (options (let ((opt (or (plist-get attr :options)
                                  (plist-get info :latex-image-default-option))))
                     (if (not (string-match "\\`\\[\\(.*\\)\\]\\'" opt)) opt
-                        (match-string 1 opt))))
+                      (match-string 1 opt))))
          ;; td - start
          (offset
           (let ((offs (plist-get attr :offset)))
             (cond
-              (offs (format "[%s]" offs))
-              ((eq float 'margin)
-               (format "[%s]" "0pt"))
-              (t ""))))
+             (offs (format "[%s]" offs))
+             ((eq float 'margin)
+              (format "[%s]" "0pt"))
+             (t ""))))
          ;; td - end
          ;; td - start
          (vertical-alignment
           (let ((v-align (plist-get attr :vertical-alignment)))
             (cond
-              ((string= v-align "t")
-               (format "\\setfloatalignment{%s}" v-align))
-              ((string= v-align "b")
-               (format "\\setfloatalignment{%s}" v-align))
-              (t ""))))
+             ((string= v-align "t")
+              (format "\\setfloatalignment{%s}" v-align))
+             ((string= v-align "b")
+              (format "\\setfloatalignment{%s}" v-align))
+             (t ""))))
          ;; td - end
          ;; td - start
          (horizontal-alignment
           (let ((h-align (plist-get attr :horizontal-alignment)))
             (cond
-              ((string= h-align "l")
-               (format "%s" "\\forceversofloat"))
-              ((string= h-align "r")
-               (format "%s" "\\forcerectofloat"))
-              (t ""))))
+             ((string= h-align "l")
+              (format "%s" "\\forceversofloat"))
+             ((string= h-align "r")
+              (format "%s" "\\forcerectofloat"))
+             (t ""))))
          ;; td - end
          image-code)
     (if (member filetype '("tikz" "pgf"))
@@ -155,35 +155,35 @@ used as a communication channel."
                                      (if (org-string-nw-p width) width "!")
                                      (if (org-string-nw-p height) height "!")
                                      image-code))))
-        ;; For other images:
-        ;; - add width and height to options.
-        ;; - include the image with \includegraphics.
-        (when (org-string-nw-p width)
-          (setq options (concat options ",width=" width)))
-        (when (org-string-nw-p height)
-          (setq options (concat options ",height=" height)))
-        (let ((search-option (org-element-property :search-option link)))
-          (when (and search-option
-                     (equal filetype "pdf")
-                     (org-string-match-p "\\`[0-9]+\\'" search-option)
-                     (not (org-string-match-p "page=" options)))
-            (setq options (concat options ",page=" search-option))))
-        (setq image-code
-              (format "\\includegraphics%s{%s}"
-                      (cond ((not (org-string-nw-p options)) "")
-                            ((= (aref options 0) ?,)
-                             (format "[%s]"(substring options 1)))
-                            (t (format "[%s]" options)))
-                      path))
-        (when (equal filetype "svg")
-          (setq image-code (replace-regexp-in-string "^\\\\includegraphics"
-                                                     "\\includesvg"
-                                                     image-code
-                                                     nil t))
-          (setq image-code (replace-regexp-in-string "\\.svg}"
-                                                     "}"
-                                                     image-code
-                                                     nil t))))
+      ;; For other images:
+      ;; - add width and height to options.
+      ;; - include the image with \includegraphics.
+      (when (org-string-nw-p width)
+        (setq options (concat options ",width=" width)))
+      (when (org-string-nw-p height)
+        (setq options (concat options ",height=" height)))
+      (let ((search-option (org-element-property :search-option link)))
+        (when (and search-option
+                   (equal filetype "pdf")
+                   (org-string-match-p "\\`[0-9]+\\'" search-option)
+                   (not (org-string-match-p "page=" options)))
+          (setq options (concat options ",page=" search-option))))
+      (setq image-code
+            (format "\\includegraphics%s{%s}"
+                    (cond ((not (org-string-nw-p options)) "")
+                          ((= (aref options 0) ?,)
+                           (format "[%s]"(substring options 1)))
+                          (t (format "[%s]" options)))
+                    path))
+      (when (equal filetype "svg")
+        (setq image-code (replace-regexp-in-string "^\\\\includegraphics"
+                                                   "\\includesvg"
+                                                   image-code
+                                                   nil t))
+        (setq image-code (replace-regexp-in-string "\\.svg}"
+                                                   "}"
+                                                   image-code
+                                                   nil t))))
     ;; Return proper string, depending on FLOAT.
     (case float
       (wrap (format "\\begin{wrapfigure}%s
@@ -260,69 +260,69 @@ INFO is a plist holding contextual information.  See
          (imagep (org-export-inline-image-p
                   link (plist-get info :latex-inline-image-rules)))
          (path (cond
-                 ((member type '("http" "https" "ftp" "mailto" "doi"))
-                  (concat type ":" raw-path))
-                 ((string= type "file") (org-export-file-uri raw-path))
-                 (t raw-path))))
+                ((member type '("http" "https" "ftp" "mailto" "doi"))
+                 (concat type ":" raw-path))
+                ((string= type "file") (org-export-file-uri raw-path))
+                (t raw-path))))
     (cond
-      ;; Link type is handled by a special function.
-      ((org-export-custom-protocol-maybe link desc 'latex))
-      ;; Image file.
-      (imagep (org-tufte-latex--inline-image link info))
-      ;; Radio link: Transcode target's contents and use them as link's
-      ;; description.
-      ((string= type "radio")
-       (let ((destination (org-export-resolve-radio-link link info)))
-         (if (not destination) desc
-             (format "\\hyperref[%s]{%s}"
-                     (org-export-get-reference destination info)
-                     desc))))
-      ;; Links pointing to a headline: Find destination and build
-      ;; appropriate referencing command.
-      ((member type '("custom-id" "fuzzy" "id"))
-       (let ((destination (if (string= type "fuzzy")
-                              (org-export-resolve-fuzzy-link link info)
-                              (org-export-resolve-id-link link info))))
-         (case (org-element-type destination)
-           ;; Id link points to an external file.
-           (plain-text
-            (if desc (format "\\href{%s}{%s}" destination desc)
-                (format "\\url{%s}" destination)))
-           ;; Fuzzy link points nowhere.
-           ((nil)
-            (format (plist-get info :latex-link-with-unknown-path-format)
-                    (or desc
-                        (org-export-data
-                         (org-element-property :raw-link link) info))))
-           ;; LINK points to a headline.  If headlines are numbered
-           ;; and the link has no description, display headline's
-           ;; number.  Otherwise, display description or headline's
-           ;; title.
-           (headline
-            (let ((label (org-latex--label destination info t)))
-              (if (and (not desc)
-                       (org-export-numbered-headline-p destination info))
-                  (format "\\ref{%s}" label)
-                  (format "\\hyperref[%s]{%s}" label
-                          (or desc
-                              (org-export-data
-                               (org-element-property :title destination) info))))))
-           ;; Fuzzy link points to a target.  Do as above.
-           (otherwise
-            (let ((ref (org-latex--label destination info t)))
-              (if (not desc) (format "\\ref{%s}" ref)
-                  (format "\\hyperref[%s]{%s}" ref desc)))))))
-      ;; Coderef: replace link with the reference name or the
-      ;; equivalent line number.
-      ((string= type "coderef")
-       (format (org-export-get-coderef-format path desc)
-               (org-export-resolve-coderef path info)))
-      ;; External link with a description part.
-      ((and path desc) (format "\\href{%s}{%s}" path desc))
-      ;; External link without a description part.
-      (path (format "\\url{%s}" path))
-      ;; No path, only description.  Try to do something useful.
-      (t (format (plist-get info :latex-link-with-unknown-path-format) desc)))))
+     ;; Link type is handled by a special function.
+     ((org-export-custom-protocol-maybe link desc 'latex))
+     ;; Image file.
+     (imagep (org-tufte-latex--inline-image link info))
+     ;; Radio link: Transcode target's contents and use them as link's
+     ;; description.
+     ((string= type "radio")
+      (let ((destination (org-export-resolve-radio-link link info)))
+        (if (not destination) desc
+          (format "\\hyperref[%s]{%s}"
+                  (org-export-get-reference destination info)
+                  desc))))
+     ;; Links pointing to a headline: Find destination and build
+     ;; appropriate referencing command.
+     ((member type '("custom-id" "fuzzy" "id"))
+      (let ((destination (if (string= type "fuzzy")
+                             (org-export-resolve-fuzzy-link link info)
+                           (org-export-resolve-id-link link info))))
+        (case (org-element-type destination)
+          ;; Id link points to an external file.
+          (plain-text
+           (if desc (format "\\href{%s}{%s}" destination desc)
+             (format "\\url{%s}" destination)))
+          ;; Fuzzy link points nowhere.
+          ((nil)
+           (format (plist-get info :latex-link-with-unknown-path-format)
+                   (or desc
+                       (org-export-data
+                        (org-element-property :raw-link link) info))))
+          ;; LINK points to a headline.  If headlines are numbered
+          ;; and the link has no description, display headline's
+          ;; number.  Otherwise, display description or headline's
+          ;; title.
+          (headline
+           (let ((label (org-latex--label destination info t)))
+             (if (and (not desc)
+                      (org-export-numbered-headline-p destination info))
+                 (format "\\ref{%s}" label)
+               (format "\\hyperref[%s]{%s}" label
+                       (or desc
+                           (org-export-data
+                            (org-element-property :title destination) info))))))
+          ;; Fuzzy link points to a target.  Do as above.
+          (otherwise
+           (let ((ref (org-latex--label destination info t)))
+             (if (not desc) (format "\\ref{%s}" ref)
+               (format "\\hyperref[%s]{%s}" ref desc)))))))
+     ;; Coderef: replace link with the reference name or the
+     ;; equivalent line number.
+     ((string= type "coderef")
+      (format (org-export-get-coderef-format path desc)
+              (org-export-resolve-coderef path info)))
+     ;; External link with a description part.
+     ((and path desc) (format "\\href{%s}{%s}" path desc))
+     ;; External link without a description part.
+     (path (format "\\url{%s}" path))
+     ;; No path, only description.  Try to do something useful.
+     (t (format (plist-get info :latex-link-with-unknown-path-format) desc)))))
 
 
 ;;;; Table
@@ -343,23 +343,23 @@ contextual information."
   (if (eq (org-element-property :type table) 'table.el)
       ;; "table.el" table.  Convert it using appropriate tools.
       (org-latex--table.el-table table info)
-      (let ((type (or (org-export-read-attribute :attr_latex table :mode)
-                      (plist-get info :latex-default-table-mode))))
-        (cond
-          ;; Case 1: Verbatim table.
-          ((string= type "verbatim")
-           (format "\\begin{verbatim}\n%s\n\\end{verbatim}"
-                   ;; Re-create table, without affiliated keywords.
-                   (org-trim (org-element-interpret-data
-                              `(table nil ,@(org-element-contents table))))))
-          ;; Case 2: Matrix.
-          ((or (string= type "math") (string= type "inline-math"))
-           (org-latex--math-table table info))
-          ;; Case 3: Standard table.
-          (t (concat (org-tufte-latex--org-table table contents info)
-                     ;; When there are footnote references within the
-                     ;; table, insert their definition just after it.
-                     (org-latex--delayed-footnotes-definitions table info)))))))
+    (let ((type (or (org-export-read-attribute :attr_latex table :mode)
+                    (plist-get info :latex-default-table-mode))))
+      (cond
+       ;; Case 1: Verbatim table.
+       ((string= type "verbatim")
+        (format "\\begin{verbatim}\n%s\n\\end{verbatim}"
+                ;; Re-create table, without affiliated keywords.
+                (org-trim (org-element-interpret-data
+                           `(table nil ,@(org-element-contents table))))))
+       ;; Case 2: Matrix.
+       ((or (string= type "math") (string= type "inline-math"))
+        (org-latex--math-table table info))
+       ;; Case 3: Standard table.
+       (t (concat (org-tufte-latex--org-table table contents info)
+                  ;; When there are footnote references within the
+                  ;; table, insert their definition just after it.
+                  (org-latex--delayed-footnotes-definitions table info)))))))
 
 (defun org-tufte-latex--org-table (table contents info)
   "Return appropriate Tufte LaTeX code for an Org table.
@@ -382,104 +382,104 @@ This function assumes TABLE has `org' as its `:type' property and
          (float-env (unless (member table-env '("longtable" "longtabu"))
                       (let ((float (plist-get attr :float)))
                         (cond
-                          ((and (not float) (plist-member attr :float)) nil)
-                          ((or (string= float "sidewaystable")
-                               (string= float "sideways")) "sidewaystable")
-                          ((string= float "multicolumn") "table*")
-                          ;; td - start
-                          ((string= float "margin") "margintable")
-                          ;; td - end
-                          ((or float
-                               (org-element-property :caption table)
-                               (org-string-nw-p (plist-get attr :caption)))
-                           "table")))))
+                         ((and (not float) (plist-member attr :float)) nil)
+                         ((or (string= float "sidewaystable")
+                              (string= float "sideways")) "sidewaystable")
+                         ((string= float "multicolumn") "table*")
+                         ;; td - start
+                         ((string= float "margin") "margintable")
+                         ;; td - end
+                         ((or float
+                              (org-element-property :caption table)
+                              (org-string-nw-p (plist-get attr :caption)))
+                          "table")))))
          ;; Extract others display options.
          (fontsize (let ((font (plist-get attr :font)))
                      (and font (concat font "\n"))))
          ;; "tabular" environment doesn't allow to define a width.
          (width (and (not (equal table-env "tabular")) (plist-get attr :width)))
          (spreadp (plist-get attr :spread))
-	 (offset (and (equal "margintable" float-env) (plist-get attr :offset)))
+         (offset (and (equal "margintable" float-env) (plist-get attr :offset)))
          (placement
           (or (plist-get attr :placement)
               (format "[%s]" (plist-get info :latex-default-figure-position))))
          (centerp (if (plist-member attr :center) (plist-get attr :center)
-                      (plist-get info :latex-tables-centered)))
+                    (plist-get info :latex-tables-centered)))
          (caption-above-p (org-latex--caption-above-p table info)))
     ;; Prepare the final format string for the table.
     (cond
-      ;; Longtable.
-      ((equal "longtable" table-env)
-       (concat (and fontsize (concat "{" fontsize))
-               (format "\\begin{longtable}{%s}\n" alignment)
-               (and caption-above-p
-                    (org-string-nw-p caption)
-                    (concat caption "\\\\\n"))
-               contents
-               (and (not caption-above-p)
-                    (org-string-nw-p caption)
-                    (concat caption "\\\\\n"))
-               "\\end{longtable}\n"
-               (and fontsize "}")))
-      ;; Longtabu
-      ((equal "longtabu" table-env)
-       (concat (and fontsize (concat "{" fontsize))
-               (format "\\begin{longtabu}%s{%s}\n"
-                       (if width
-                           (format " %s %s "
-                                   (if spreadp "spread" "to") width) "")
-                       alignment)
-               (and caption-above-p
-                    (org-string-nw-p caption)
-                    (concat caption "\\\\\n"))
-               contents
-               (and (not caption-above-p)
-                    (org-string-nw-p caption)
-                    (concat caption "\\\\\n"))
-               "\\end{longtabu}\n"
-               (and fontsize "}")))
-      ;; Others.
-      (t (concat (cond
-                   (float-env
-                    (concat (format "\\begin{%s}%s\n" float-env
-				    (if (string= "margintable" float-env)
-					(if offset (format "[%s]" offset) "")
-					placement))
-                            (if caption-above-p caption "")
-                            (when centerp "\\centering\n")
-                            fontsize))
-                   ((and (not float-env) caption)
-                    (concat
-                     (and centerp "\\begin{center}\n" )
-                     (if caption-above-p caption "")
-                     (cond ((and fontsize centerp) fontsize)
-                           (fontsize (concat "{" fontsize)))))
-                   (centerp (concat "\\begin{center}\n" fontsize))
-                   (fontsize (concat "{" fontsize)))
-                 (cond ((equal "tabu" table-env)
-                        (format "\\begin{tabu}%s{%s}\n%s\\end{tabu}"
-                                (if width (format
-                                           (if spreadp " spread %s " " to %s ")
-                                           width) "")
-                                alignment
-                                contents))
-                       (t (format "\\begin{%s}%s{%s}\n%s\\end{%s}"
-                                  table-env
-                                  (if width (format "{%s}" width) "")
-                                  alignment
-                                  contents
-                                  table-env)))
-                 (cond
-                   (float-env
-                    (concat (if caption-above-p "" (concat "\n" caption))
-                            (format "\n\\end{%s}" float-env)))
-                   ((and (not float-env) caption)
-                    (concat
-                     (if caption-above-p "" (concat "\n" caption))
-                     (and centerp "\n\\end{center}")
-                     (and fontsize (not centerp) "}")))
-                   (centerp "\n\\end{center}")
-                   (fontsize "}")))))))
+     ;; Longtable.
+     ((equal "longtable" table-env)
+      (concat (and fontsize (concat "{" fontsize))
+              (format "\\begin{longtable}{%s}\n" alignment)
+              (and caption-above-p
+                   (org-string-nw-p caption)
+                   (concat caption "\\\\\n"))
+              contents
+              (and (not caption-above-p)
+                   (org-string-nw-p caption)
+                   (concat caption "\\\\\n"))
+              "\\end{longtable}\n"
+              (and fontsize "}")))
+     ;; Longtabu
+     ((equal "longtabu" table-env)
+      (concat (and fontsize (concat "{" fontsize))
+              (format "\\begin{longtabu}%s{%s}\n"
+                      (if width
+                          (format " %s %s "
+                                  (if spreadp "spread" "to") width) "")
+                      alignment)
+              (and caption-above-p
+                   (org-string-nw-p caption)
+                   (concat caption "\\\\\n"))
+              contents
+              (and (not caption-above-p)
+                   (org-string-nw-p caption)
+                   (concat caption "\\\\\n"))
+              "\\end{longtabu}\n"
+              (and fontsize "}")))
+     ;; Others.
+     (t (concat (cond
+                 (float-env
+                  (concat (format "\\begin{%s}%s\n" float-env
+                                  (if (string= "margintable" float-env)
+                                      (if offset (format "[%s]" offset) "")
+                                    placement))
+                          (if caption-above-p caption "")
+                          (when centerp "\\centering\n")
+                          fontsize))
+                 ((and (not float-env) caption)
+                  (concat
+                   (and centerp "\\begin{center}\n" )
+                   (if caption-above-p caption "")
+                   (cond ((and fontsize centerp) fontsize)
+                         (fontsize (concat "{" fontsize)))))
+                 (centerp (concat "\\begin{center}\n" fontsize))
+                 (fontsize (concat "{" fontsize)))
+                (cond ((equal "tabu" table-env)
+                       (format "\\begin{tabu}%s{%s}\n%s\\end{tabu}"
+                               (if width (format
+                                          (if spreadp " spread %s " " to %s ")
+                                          width) "")
+                               alignment
+                               contents))
+                      (t (format "\\begin{%s}%s{%s}\n%s\\end{%s}"
+                                 table-env
+                                 (if width (format "{%s}" width) "")
+                                 alignment
+                                 contents
+                                 table-env)))
+                (cond
+                 (float-env
+                  (concat (if caption-above-p "" (concat "\n" caption))
+                          (format "\n\\end{%s}" float-env)))
+                 ((and (not float-env) caption)
+                  (concat
+                   (if caption-above-p "" (concat "\n" caption))
+                   (and centerp "\n\\end{center}")
+                   (and fontsize (not centerp) "}")))
+                 (centerp "\n\\end{center}")
+                 (fontsize "}")))))))
 
 ;;;; Footnote Reference
 
@@ -505,28 +505,28 @@ CONTENTS is nil.  INFO is a plist holding contextual information."
      (when (eq (org-element-type prev) 'footnote-reference)
        (plist-get info :latex-footnote-separator)))
    (cond
-     ;; Use \footnotemark if the footnote has already been defined.
-     ((not (org-export-footnote-first-reference-p footnote-reference info))
-      (format "\\footnotemark[%s]{}"
-              (org-export-get-footnote-number footnote-reference info)))
-     ;; Use \footnotemark if reference is within another footnote
-     ;; reference, footnote definition or table cell.
-     ((org-element-lineage footnote-reference
-                           '(footnote-reference footnote-definition table-cell))
-      "\\footnotemark")
-     ;; Otherwise, define it with \sidenote command.
-     (t
-      (let* ((def (org-export-get-footnote-definition footnote-reference info))
-             (attr (org-export-get-footnote-definition--latex-attributes
-                    footnote-reference info))
-             (offs (plist-get attr :offset))
-             (offset (if offs (format "[][%s]" offs) "[]")))
-        (concat
-         (format "\\sidenote%s{%s}" offset (org-trim (org-export-data def info)))
-         ;; Retrieve all footnote references within the footnote and
-         ;; add their definition after it, since LaTeX doesn't support
-         ;; them inside.
-         (org-latex--delayed-footnotes-definitions def info)))))))
+    ;; Use \footnotemark if the footnote has already been defined.
+    ((not (org-export-footnote-first-reference-p footnote-reference info))
+     (format "\\footnotemark[%s]{}"
+             (org-export-get-footnote-number footnote-reference info)))
+    ;; Use \footnotemark if reference is within another footnote
+    ;; reference, footnote definition or table cell.
+    ((org-element-lineage footnote-reference
+                          '(footnote-reference footnote-definition table-cell))
+     "\\footnotemark")
+    ;; Otherwise, define it with \sidenote command.
+    (t
+     (let* ((def (org-export-get-footnote-definition footnote-reference info))
+            (attr (org-export-get-footnote-definition--latex-attributes
+                   footnote-reference info))
+            (offs (plist-get attr :offset))
+            (offset (if offs (format "[][%s]" offs) "[]")))
+       (concat
+        (format "\\sidenote%s{%s}" offset (org-trim (org-export-data def info)))
+        ;; Retrieve all footnote references within the footnote and
+        ;; add their definition after it, since LaTeX doesn't support
+        ;; them inside.
+        (org-latex--delayed-footnotes-definitions def info)))))))
 
 ;;; Interactive function
 
