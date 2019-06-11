@@ -153,7 +153,7 @@ used as a communication channel."
                                    image-code)))))
      ((string= filetype "pdf_tex")
       (progn
-        (setq image-code (format "\\def\\svgwidth{\\columnwidth}\n\\import{./figures/}{%s}" path))))
+        (setq image-code (format "\\def\\svgwidth{\\columnwidth}\n\\import{figures/}{%s}" path))))
      (t
       (when (org-string-nw-p width)
         (setq options (concat options ",width=" width)))
@@ -194,14 +194,14 @@ used as a communication channel."
       (sideways (format "\\begin{sidewaysfigure}
 %s\\centering
 %s%s
-%s\\end{sidewaysfigure}"
+%s\n\\end{sidewaysfigure}"
                         (if caption-above-p caption "")
                         comment-include image-code
                         (if caption-above-p "" caption)))
       (multicolumn (format "\\begin{figure*}%s
 %s\\centering
 %s%s
-%s\\end{figure*}"
+%s\n\\end{figure*}"
                            placement
                            (if caption-above-p caption "")
                            comment-include image-code
@@ -210,7 +210,7 @@ used as a communication channel."
       (margin (format "\\begin{marginfigure}%s
 %s
 %s%s
-%s\\end{marginfigure}"
+%s\n\\end{marginfigure}"
                       offset
                       (if caption-above-p caption "")
                       comment-include image-code
@@ -219,7 +219,7 @@ used as a communication channel."
       (figure (format "\\begin{figure}%s
 %s\\centering
 %s%s
-%s%s%s\\end{figure}"
+%s%s%s\n\\end{figure}"
                       placement
                       (if caption-above-p caption "")
                       comment-include image-code
@@ -228,7 +228,7 @@ used as a communication channel."
       ;;       (figure (format "\\begin{figure}%s
       ;; %s\\centering
       ;; %s%s
-      ;; %s\\end{figure}"
+      ;; %s\n\\end{figure}"
       ;;                      placement
       ;;                      (if caption-above-p caption "")
       ;;                      comment-include image-code
@@ -236,7 +236,7 @@ used as a communication channel."
       (nonfloat
        (format "\\begin{center}
 %s%s
-%s\\end{center}"
+%s\n\\end{center}"
                (if caption-above-p caption "")
                image-code
                (if caption-above-p "" caption)))
@@ -454,13 +454,13 @@ This function assumes TABLE has `org' as its `:type' property and
                  (centerp (concat "\\begin{center}\n" fontsize))
                  (fontsize (concat "{" fontsize)))
                 (cond ((equal "tabu" table-env)
-                       (format "\\begin{tabu}%s{%s}\n%s\\end{tabu}"
+                       (format "\\begin{tabu}%s{%s}\n%s\n\\end{tabu}"
                                (if width (format
                                           (if spreadp " spread %s " " to %s ")
                                           width) "")
                                alignment
                                contents))
-                      (t (format "\\begin{%s}%s{%s}\n%s\\end{%s}"
+                      (t (format "\\begin{%s}%s{%s}\n%s\n\\end{%s}"
                                  table-env
                                  (if width (format "{%s}" width) "")
                                  alignment
