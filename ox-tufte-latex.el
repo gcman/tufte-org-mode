@@ -137,27 +137,24 @@ used as a communication channel."
              (t ""))))
          ;; td - end
          image-code)
-    (if (member filetype '("tikz" "pgf"))
-        ;; For tikz images:
-        ;; - use \input to read in image file.
-        ;; - if options are present, wrap in a tikzpicture environment.
-        ;; - if width or height are present, use \resizebox to change
-        ;;   the image size.
-        (progn
-          (setq image-code (format "\\input{%s}" path))
-          (when (org-string-nw-p options)
-            (setq image-code
-                  (format "\\begin{tikzpicture}[%s]\n%s\n\\end{tikzpicture}"
-                          options
-                          image-code)))
-          (when (or (org-string-nw-p width) (org-string-nw-p height))
-            (setq image-code (format "\\resizebox{%s}{%s}{%s}"
-                                     (if (org-string-nw-p width) width "!")
-                                     (if (org-string-nw-p height) height "!")
-                                     image-code))))
-      ;; For other images:
-      ;; - add width and height to options.
-      ;; - include the image with \includegraphics.
+    (cond
+     ((member filetype '("tikz" "pgf"))
+      (progn
+        (setq image-code (format "\\input{%s}" path))
+        (when (org-string-nw-p options)
+          (setq image-code
+                (format "\\begin{tikzpicture}[%s]\n%s\n\\end{tikzpicture}"
+                        options
+                        image-code)))
+        (when (or (org-string-nw-p width) (org-string-nw-p height))
+          (setq image-code (format "\\resizebox{%s}{%s}{%s}"
+                                   (if (org-string-nw-p width) width "!")
+                                   (if (org-string-nw-p height) height "!")
+                                   image-code)))))
+     ((string= filetype "pdf_tex")
+      (progn
+        (setq image-code (format "\\def\\svgwidth{\\columnwidth}\n\\import{./figures/}{%s}" path))))
+     (t
       (when (org-string-nw-p width)
         (setq options (concat options ",width=" width)))
       (when (org-string-nw-p height)
@@ -183,7 +180,7 @@ used as a communication channel."
         (setq image-code (replace-regexp-in-string "\\.svg}"
                                                    "}"
                                                    image-code
-                                                   nil t))))
+                                                   nil t)))))
     ;; Return proper string, depending on FLOAT.
     (case float
       (wrap (format "\\begin{wrapfigure}%s
